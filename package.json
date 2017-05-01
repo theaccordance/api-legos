@@ -1,0 +1,29 @@
+{
+  "name": "legos-api",
+  "version": "0.1.0",
+  "description": "modular RESTful endpoints for apps",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/theaccordance/legos-api.git"
+  },
+  "keywords": [
+    "restful",
+    "rest",
+    "api",
+    "transmission"
+  ],
+  "author": "Joe Mainwaring <jm@theaccordance.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/theaccordance/legos-api/issues"
+  },
+  "homepage": "https://github.com/theaccordance/legos-api#readme",
+  "dependencies": {
+    "express": "^4.15.2",
+    "transmission": "^0.4.9"
+  }
+}
