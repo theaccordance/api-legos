@@ -8,81 +8,92 @@ module.exports = function (legos) {
             port: legos.transmission.port
         });
 
-    function callback(err, result) {
-        if (err) {
-            console.log(err);
-            return err;
-        }
-        console.log(result);
-        return result;
-    }
-
-// return application status
+    // return application status
     router.get('/', function (req, res) {
-        var state = {
-            session: transmission.session(callback),
-            sessionStats: transmission.sessionStats(callback),
-            freeSpace: transmission.freeSpace('path', callback)
-        };
+        // var state = {
+        //     session: transmission.session(callback),
+        //     sessionStats: transmission.sessionStats(callback),
+        //     freeSpace: transmission.freeSpace('path', callback)
+        // };
         // Return status of Transmission
         // return free space
         console.log('transmission:state');
-        return res.json(state);
+        transmission.session(function (err, session) {
+            if (err) {
+                return console.error(err);
+            }
+
+            transmission.sessionStats(function (err, sessionStats) {
+                if (err) {
+                    return console.error(err);
+                }
+
+                return res.json({
+                    session: session,
+                    sessionStats: sessionStats
+                });
+            })
+        });
+
     });
 
-//updates application
+    //updates application
     router.put('/', function (req, res) {
         console.log('transmission:update');
         return res.json({mock: true});
     });
 
-// returns list of torrents
+    // returns list of torrents
     router.get('/torrents/', function (req, res) {
         // Return list of torrents
         console.log('transmission:torrents');
-        return res.json(transmission.get(callback));
+        transmission.get(function (err, torrents) {
+            if (err) {
+                return console.error(err);
+            }
+            return res.json(torrents);
+        });
+
     });
 
-// returns info on a specific torrent
-    router.get('/torrents/:id', function (req, res) {
-        // Return torrent
-        console.log('torrent:get');
-        return res.json(transmission.get(req.params.id, callback));
-    });
+    // // returns info on a specific torrent
+    // router.get('/torrents/:id', function (req, res) {
+    //     console.log('torrent:get', req.params.id);
+    //     transmission.get(req.params.id, function (err, torrents) {
+    //         if (err) {
+    //             return res.json(err);
+    //         }
+    //         return res.json(torrents);
+    //     });
+    // });
 
-// creates new torrent
-    router.post('/torrents/', function (req, res) {
-        var addOptions = {},
-            result = transmission.addUrl(req.params.id, addOptions, callback);
-        // Add Torrent
-        console.log('torrent:add');
-        return res.json(result);
-    });
+    // // creates new torrent
+    // router.post('/torrents/', function (req, res) {
+    //     var addOptions = {},
+    //         result = transmission.addUrl(req.params.id, callback);
+    //     // Add Torrent
+    //     console.log('torrent:add');
+    //     return res.json(result);
+    // });
 
-// updates a specific torrent
-    router.put('/torrents/:id', function (req, res) {
-        var setOptions = {};
+    // // updates a specific torrent
+    // router.put('/torrents/:id/start', function (req, res) {
+    //     console.log('start', req.params.id);
+    //     return transmission.start(req.params.id, function (err, torrents) {
+    //         if (err) {
+    //             return res.json(err);
+    //         }
+    //         console.log('start:success', torrents);
+    //         return res.json(torrents);
+    //     });
+    // });
 
-        // start torrent
-        if (req.body.start) {
-            console.log('torrent:start');
-            return res.json(transmission.start(req.params.id, callback));
-        }
-        // stop torrent
-        if (req.body.stop) {
-            console.log('torrent:stop');
-            return res.json(transmission.stop(req.params.id, callback));
-        }
-        console.log('torrent:set');
-        return res.json(transmission.set(req.params.id, setOptions, callback));
-    });
-
-// remove a torrent;
-    router.delete('/torrents/:id', function (req, res) {
-        // Remove Torrent
-        console.log('torrent:remove');
-        return res.json(transmission.remove(req.params.id, callback));
-    });
+    // // remove a torrent;
+    // router.delete('/torrents/:id', function (req, res) {
+    //     // Remove Torrent
+    //     console.log('torrent:remove');
+    //     return res.json(transmission.remove(req.params.id, callback));
+    // });
 
     return router;
 };
