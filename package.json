@@ -24,6 +24,6 @@
   "homepage": "https://github.com/theaccordance/legos-api#readme",
   "dependencies": {
     "express": "^4.15.2",
-    "transmission": "^0.4.9"
+    "request": "^2.81.0"
   }
 }
