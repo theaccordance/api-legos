@@ -2,9 +2,44 @@ module.exports = function (legos) {
     "use strict";
     var express = require('express'),
         router = express.Router(),
-        request = require('request'),
-        sessionId = null;
+        request = require('request');
 
+    function getTransmission(req, res) {
+        var body = {
+                method: 'session-get',
+                arguments: {
+                }
+            },
+            options = {
+                url: 'http://localhost:9091/transmission/rpc',
+                method: 'POST',
+                headers: {
+                    'x-transmission-session-id': null
+                }
+            };
+
+        function callback(error, response, body) {
+            if (error) {
+                console.log(error);
+                return res.json({error: true});
+            }
+
+            if (response.statusCode === 409) {
+                console.log('statuscode:409');
+                options.headers['x-transmission-session-id'] = response.headers['x-transmission-session-id'];
+                return request(options, callback);
+            }
+
+
+            if (response) {
+                console.log(response.statusCode);
+            }
+            return res.json(JSON.parse(body));
+        }
+
+        options.body = JSON.stringify(body);
+        request(options, callback);
+    }
     function getTorrent(req, res) {
         var body = {
                 method: 'torrent-get',
@@ -16,7 +51,7 @@ module.exports = function (legos) {
                 url: 'http://localhost:9091/transmission/rpc',
                 method: 'POST',
                 headers: {
-                    'x-transmission-session-id': sessionId
+                    'x-transmission-session-id': null
                 }
             };
 
@@ -47,23 +82,59 @@ module.exports = function (legos) {
 
         request(options, callback);
     }
+    function deleteTorrent(req, res) {
+        var body = {
+                method: 'torrent-remove',
+                arguments: {
+                    ids: [parseInt(req.params.id)]
+                }
+            },
+            options = {
+                url: 'http://localhost:9091/transmission/rpc',
+                method: 'POST',
+                headers: {
+                    'x-transmission-session-id': null
+                }
+            };
+
+        function callback(error, response, body) {
+            if (error) {
+                console.log(error);
+                return res.json({error: true});
+            }
+
+            if (response.statusCode === 409) {
+                console.log('statuscode:409');
+                options.headers['x-transmission-session-id'] = response.headers['x-transmission-session-id'];
+                return request(options, callback);
+            }
+
+
+            if (response) {
+                console.log(response.statusCode);
+            }
+            return res.json(JSON.parse(body));
+        }
+
+        options.body = JSON.stringify(body);
+        request(options, callback);
+    }
 
 
 
 
     // REST endpoints
-
-    // router.route('/')
-    //     .get(getTransmission);
+    router.route('/')
+        .get(getTransmission);
     //     .put();
     router.route('/torrents/')
         .get(getTorrent);
     //     .post()
     //     .put();
     router.route('/torrents/:id')
-        .get(getTorrent);
+        .get(getTorrent)
     //     .put()
-    //     .delete();
+        .delete(deleteTorrent);
 
     return router;
 };
