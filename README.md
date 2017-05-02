@@ -1,10 +1,14 @@
 # legos-api
-Modular REST API endpoints for apps 
+Build your own API with modular RESTful integrations.
 
 ## Installation
 ```bash
 npm install legos-api
 ```
+
+## Integrations
+- Transmission
+
 
 ## Example
 ```javascript
