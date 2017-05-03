@@ -82,6 +82,48 @@ module.exports = function (legos) {
 
         request(options, callback);
     }
+    function addTorrent(req, res) {
+        var body = {
+                method: 'torrent-add',
+                arguments: {
+                    filename: req.body.filename
+                }
+            },
+            options = {
+                url: 'http://localhost:9091/transmission/rpc',
+                method: 'POST',
+                headers: {
+                    'x-transmission-session-id': null
+                }
+            };
+
+        function callback(error, response, body) {
+            if (error) {
+                console.log(error);
+                return res.json({error: true});
+            }
+
+            if (response.statusCode === 409) {
+                console.log('statuscode:409');
+                options.headers['x-transmission-session-id'] = response.headers['x-transmission-session-id'];
+                return request(options, callback);
+            }
+
+
+            if (response) {
+                console.log(response.statusCode);
+            }
+            return res.json(JSON.parse(body));
+        }
+
+        if (!req.body.filename) {
+            console.log(req.body);
+            return res.json({error: 'no filename'});
+        }
+
+        options.body = JSON.stringify(body);
+        request(options, callback);
+    }
     function deleteTorrent(req, res) {
         var body = {
                 method: 'torrent-remove',
@@ -128,8 +170,8 @@ module.exports = function (legos) {
         .get(getTransmission);
     //     .put();
     router.route('/torrents/')
-        .get(getTorrent);
-    //     .post()
+        .get(getTorrent)
+        .post(addTorrent);
     //     .put();
     router.route('/torrents/:id')
         .get(getTorrent)
