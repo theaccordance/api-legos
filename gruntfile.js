@@ -34,7 +34,7 @@ function init(grunt) {
     }
     loadGrunt();
 
-    grunt.registerTask('default', ['apidoc', 'connect', 'watch']);
+    grunt.registerTask('default', ['clean', 'apidoc', 'connect', 'watch']);
 }
 
 module.exports = init;
