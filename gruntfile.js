@@ -35,6 +35,7 @@ function init(grunt) {
     loadGrunt();
 
     grunt.registerTask('default', ['clean', 'apidoc', 'connect', 'watch']);
+    grunt.registerTask('publish', ['clean', 'apidoc', 'gh-pages']);
 }
 
 module.exports = init;
