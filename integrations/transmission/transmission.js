@@ -46,48 +46,6 @@ module.exports = function (config) {
         serverRequest(options, queryCallback);
     }
 
-    function torrentsMethod(req, res, next) {
-        var method = ENUMS.torrents[req.method];
-        if (method) {
-            req.transmission = {
-                method: method
-            };
-            return next();
-        }
-        return res.statusCode(403).json({
-            statusCode: 403,
-            error: 'method not supported',
-            method: req.method,
-            path: req.path
-        })
-    }
-
-    function torrentsArguments(req, res, next) {
-
-        req.transmission.arguments = {};
-
-        if (req.transmission.method === ENUMS.torrents.DELETE && !req.params.id) {
-            return res.status(400).json({ error: 'missing req.params.id'});
-        }
-
-        if (req.params.id) {
-            req.transmission.arguments.ids = [parseInt(req.params.id)];
-        }
-
-        if (req.transmission.method === ENUMS.torrents.POST) {
-            if (!req.body.filename) {
-                return res.status(400).json({ error: 'missing req.body.filename' });
-            }
-            req.transmission.arguments.filename = req.body.filename;
-        }
-
-        if (req.transmission.method === ENUMS.torrents.GET) {
-            req.transmission.arguments.fields = ENUMS.fields;
-        }
-
-        return next();
-    }
-
     function getSessionRequest(req, res, next) {
         req.transmission = {
             method: ENUMS.session.GET
@@ -147,13 +105,77 @@ module.exports = function (config) {
         return next();
     }
 
+    function getTorrentsRequest(req, res, next) {
+        req.transmission = {
+            method: ENUMS.torrents.GET,
+            arguments: {
+                fields: ['activityDate', 'addedDate', 'doneDate', 'eta', 'id', 'magnetLink', 'name', 'percentDone', 'rateDownload', 'rateUpload', 'uploadRatio']
+            }
+        };
+
+        if (req.params.id) {
+            req.transmission.arguments.ids = [parseInt(req.params.id)];
+        }
+        return next();
+    }
+
+    function addTorrentRequest(req, res, next) {
+        if (!req.body.filename) {
+            return res.status(400).json({ error: 'no filename specified.' });
+        }
+
+        req.transmission = {
+            method: ENUMS.torrents.POST,
+            arguments: {
+                filename: req.body.filename
+            }
+        };
+        return next();
+    }
+
+    function verifyAddTorrent(req, res, next) {
+        // torrent already exists
+        if (res.transmission.arguments["torrent-duplicate"]) {
+            return res.status(400).json({
+                "error": "Torrent already exists"
+            });
+        }
+
+        if (res.transmission.arguments["torrent-added"]) {
+            req.params.id = res.transmission.arguments["torrent-added"].id;
+            delete req.transmission;
+            delete res.transmission;
+            return next();
+        }
+        return res.json(res.transmission);
+    }
+
+    function torrentsResponse(req, res) {
+        return res.json(res.transmission);
+    }
+
+    function torrentResponse(req, res) {
+        if (!res.transmission.arguments.torrents.length) {
+            return res.status(404).json({
+                error: true,
+                message: 'Torrent not found',
+                id: req.params.id
+            });
+        }
+        return res.json(res.transmission.arguments.torrents[0]);
+
+    }
+
     return {
         getSessionRequest: getSessionRequest,
         getSessionResponse: getSessionResponse,
         setSessionRequest: setSessionRequest,
         setSessionResponse: setSessionResponse,
-        torrentsMethod: torrentsMethod,
-        torrentsArguments: torrentsArguments,
+        getTorrentsRequest: getTorrentsRequest,
+        addTorrentRequest: addTorrentRequest,
+        verifyAddTorrent: verifyAddTorrent,
+        torrentsResponse: torrentsResponse,
+        torrentResponse: torrentResponse,
         query: queryServer
     };
 };

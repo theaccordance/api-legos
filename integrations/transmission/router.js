@@ -121,7 +121,7 @@ module.exports = function (config) {
      */
 
     /**
-     * @api {get} /transmission/ Application Status
+     * @api {get} /transmission/ Application: Get Status
      * @apiGroup Transmission
      * @apiDescription Returns the current state of the application.
      * @apiUse sessionSuccess
@@ -189,7 +189,22 @@ module.exports = function (config) {
      * @apiSuccess {Number} torrents.rateDownload Download rate (b/s)
      * @apiSuccess {Number} torrents.rateUpload Upload rate (b/s)
      * @apiSuccess {Number} torrents.uploadRatio Seed ratio
-     *
+     * @apiSuccessExample {json} Success
+     *  {
+     *      "torrents": [{
+     *          "activityDate": 1493824345,
+     *          "addedDate": 1493680963,
+     *          "doneDate": 1493823995,
+     *          "eta": -1,
+     *          "id": 1,
+     *          "magnetLink": "magnet:?xt=urn:magnet.link.goes.here",
+     *          "name": "My Awesome Torrent",
+     *          "percentDone": 1,
+     *          "rateDownload": 0,
+     *          "rateUpload": 0,
+     *          "uploadRatio": 0.0002
+     *      }]
+     *  }
      */
     router.get('/torrents', tm.getTorrentsRequest, tm.query, tm.torrentsResponse);
 
@@ -205,6 +220,8 @@ module.exports = function (config) {
      *  }
      *
      */
+    router.post('/torrents', tm.addTorrentRequest, tm.query, tm.verifyAddTorrent, tm.getTorrentsRequest, tm.query, tm.torrentResponse);
+
 
     /**
      * @api {get} /transmission/torrents/:id Get a Torrent
@@ -236,6 +253,14 @@ module.exports = function (config) {
      *      "rateUpload": 0,
      *      "uploadRatio": 0.0002
      *  }
+     *
+     *  @apiErrorExample {json} Torrent Not Found
+     *    HTTP/1.1 404 Not Found
+     *    {
+     *      "error": true,
+     *      "message": "Torrent Not Found"
+     *      "id": "5"
+     *    }
      */
     router.get('/torrents/:id', tm.getTorrentsRequest, tm.query, tm.torrentResponse);
 
