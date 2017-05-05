@@ -2,7 +2,7 @@ module.exports = function () {
     "use strict";
     return {
         legos: {
-            src: 'apps/',
+            src: 'integrations/',
             dest: 'public'
         }
     };

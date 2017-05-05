@@ -46,22 +46,6 @@ module.exports = function (config) {
         serverRequest(options, queryCallback);
     }
 
-    function sessionMethod(req, res, next) {
-        var method = ENUMS.session[req.method];
-        if (method) {
-            req.transmission = {
-                method: method
-            };
-            return next();
-        }
-        return res.statusCode(403).json({
-            statusCode: 403,
-            error: 'method not supported',
-            method: req.method,
-            path: req.path
-        });
-    }
-
     function torrentsMethod(req, res, next) {
         var method = ENUMS.torrents[req.method];
         if (method) {
@@ -104,14 +88,70 @@ module.exports = function (config) {
         return next();
     }
 
-    function sessionResponse(req, res) {
-        console.log(res.transmission);
+    function getSessionRequest(req, res, next) {
+        req.transmission = {
+            method: ENUMS.session.GET
+        };
+        return next();
+    }
+
+    function getSessionResponse(req, res) {
         return res.json(res.transmission.arguments);
     }
 
+    function setSessionResponse(req, res, next) {
+        if (res.transmission.result === "success") {
+            delete req.transmission;
+            delete res.transmission;
+            return next();
+        }
+        // not a success
+        return res.status(400).json({
+            "error": true
+        })
+    }
+
+    function setSessionRequest(req, res, next) {
+        var exceptions = ["blocklist-size", "config-dir", "rpc-version", "rpc-version-minimum", "version"],
+            args;
+
+        function validateArguments(arg) {
+            return exceptions.indexOf(arg) > -1;
+        }
+
+        // post w/o any fields. reject
+        if (!req.body) {
+            return res.status(400).json({
+                "statusCode": 400,
+                "error": "Missing params"
+            });
+        }
+
+        args = Object.keys(req.body);
+
+        // if any of the args match the exception list, reject
+        if (args.some(validateArguments)) {
+            return res.status(400).json({
+                "statusCode": 400,
+                "error": "Invalid Params",
+                "message": 'Your request contains invalid parameters',
+                "invalid_params": exceptions
+            });
+        }
+
+        req.transmission = {
+            method: ENUMS.session.PUT,
+            arguments: req.body
+        };
+
+        return next();
+    }
+
     return {
-        sessionMethod: sessionMethod,
-        sessionResponse: sessionResponse,
+        getSessionRequest: getSessionRequest,
+        getSessionResponse: getSessionResponse,
+        setSessionRequest: setSessionRequest,
+        setSessionResponse: setSessionResponse,
         torrentsMethod: torrentsMethod,
         torrentsArguments: torrentsArguments,
         query: queryServer

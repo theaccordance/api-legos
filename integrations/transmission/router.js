@@ -2,7 +2,7 @@ module.exports = function (config) {
     "use strict";
     var express = require('express'),
         router = express.Router(),
-        transmission = require('./transmission')(config);
+        tm = require('./transmission')(config);
 
     /**
      * @apiDefine Transmission Transmission
@@ -129,8 +129,64 @@ module.exports = function (config) {
             }
      *
      */
+    router.get('/', tm.getSessionRequest, tm.query, tm.getSessionResponse);
 
-    router.get('/', transmission.sessionMethod, transmission.query, transmission.sessionResponse);
+    /**
+     * @api {put} /transmission/ Update Application
+     * @apiGroup Transmission
+     * @apiDescription Update Application Settings
+     * @apiParam {number} alt-speed-down max global download speed (in K/s)
+     * @apiParam {boolean} alt-speed-enabled true means use the alt speeds
+     * @apiParam {number} alt-speed-time-begin when to turn on alt speeds (units: minutes after midnight)
+     * @apiParam {boolean} alt-speed-time-enabled true means the scheduled on/off times are used
+     * @apiParam {number} alt-speed-time-end when to turn off alt speeds (units: minutes after midnight)
+     * @apiParam {number} alt-speed-time-day what day(s) to turn on alt speeds
+     * @apiParam {number} alt-speed-up max global upload speed (in K/s)
+     * @apiParam {boolean} blocklist-enabled true means enabled
+     * @apiParam {boolean} dht-enabled true means allow dht in public torrents
+     * @apiParam {string} encryption "required", "preferred", "tolerated"
+     * @apiParam {string} download-dir default path to download torrents
+     * @apiParam {number} peer-limit-global maximum global number of peers
+     * @apiParam {number} peer-limit-per-torrent maximum global number of peers
+     * @apiParam {boolean} pex-enabled true means allow pex in public torrents
+     * @apiParam {number} peer-port port number
+     * @apiParam {boolean} peer-port-random-on-start true means pick a random peer port on launch
+     * @apiParam {boolean} port-forwarding-enabled true means enabled
+     * @apiParam {number} seedRatioLimit the default seed ratio for torrents to use
+     * @apiParam {boolean} seedRatioLimited true if seedRatioLimit is honored by default
+     * @apiParam {number} speed-limit-down max global download speed (in K/s)
+     * @apiParam {boolean} speed-limit-down-enabled true means enabled
+     * @apiParam {number} speed-limit-up max global upload speed (in K/s)
+     * @apiParam {boolean} speed-limit-up-enabled true means enabled
+     * @apiParamExample {json} Request Body
+     *
+     *  {
+     *      "download-dir": "path/to/changed/dir"
+     *  }
+     *
+     */
+    router.put('/', tm.setSessionRequest, tm.query, tm.setSessionResponse, tm.getSessionRequest, tm.query, tm.getSessionResponse);
+
+    /**
+     * @api {get} /torrents List All Torrents
+     * @apiGroup Transmission
+     * @apiDescription Retrieve an Array of Objects representing torrents
+     * @apiSuccess {Object[]} torrents An array containing torrents
+     * @apiSuccess {number} torrents.id unique identifier for the torrent
+     *
+     */
+
+    /**
+     * @api {post} /torrents Add a Torrent
+     * @apiGroup Transmission
+     * @apiParam (required) {String} filename Magnet Link for torrent file.
+     * @apiParamExample {json} Request Body
+     *
+     *  {
+     *      "filename": "magnet:?xt=urn:magnet.link.goes.here"
+     *  }
+     *
+     */
 
     return router;
 };
