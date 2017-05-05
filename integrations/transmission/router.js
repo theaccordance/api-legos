@@ -14,9 +14,7 @@ module.exports = function (config) {
      */
 
     /**
-     * @api {get} /transmission/ Application Status
-     * @apiGroup Transmission
-     * @apiDescription Returns the current state of the application.
+     * @apiDefine sessionSuccess
      * @apiSuccess {number} alt-speed-down max global download speed (in K/s)
      * @apiSuccess {boolean} alt-speed-enabled true means use the alt speeds
      * @apiSuccess {number} alt-speed-time-begin when to turn on alt speeds (units: minutes after midnight)
@@ -44,14 +42,6 @@ module.exports = function (config) {
      * @apiSuccess {number} speed-limit-up max global upload speed (in K/s)
      * @apiSuccess {boolean} speed-limit-up-enabled true means enabled
      * @apiSuccess {string} version Version of Transmission Instance
-     * @apiErrorExample {json} Transmission Not Found
-     *    HTTP/1.1 404 Not Found
-     *    {
-     *      "error": true,
-     *      "code": "ECONNREFUSED",
-     *      "message": "Unable to connect to transmission.  check that its running before modifying the configuration"
-     *    }
-     *
      * @apiSuccessExample {json} Success
      *  HTTP/1.1 200 OK
      *  {
@@ -129,10 +119,25 @@ module.exports = function (config) {
             }
      *
      */
+
+    /**
+     * @api {get} /transmission/ Application Status
+     * @apiGroup Transmission
+     * @apiDescription Returns the current state of the application.
+     * @apiUse sessionSuccess
+     * @apiErrorExample {json} Transmission Not Found
+     *    HTTP/1.1 404 Not Found
+     *    {
+     *      "error": true,
+     *      "code": "ECONNREFUSED",
+     *      "message": "Unable to connect to transmission.  check that its running before modifying the configuration"
+     *    }
+     *
+     */
     router.get('/', tm.getSessionRequest, tm.query, tm.getSessionResponse);
 
     /**
-     * @api {put} /transmission/ Update Application
+     * @api {put} /transmission Update Application
      * @apiGroup Transmission
      * @apiDescription Update Application Settings
      * @apiParam {number} alt-speed-down max global download speed (in K/s)
@@ -164,20 +169,33 @@ module.exports = function (config) {
      *      "download-dir": "path/to/changed/dir"
      *  }
      *
+     * @apiUse sessionSuccess
      */
     router.put('/', tm.setSessionRequest, tm.query, tm.setSessionResponse, tm.getSessionRequest, tm.query, tm.getSessionResponse);
 
     /**
-     * @api {get} /torrents List All Torrents
+     * @api {get} /transmission/torrents List All Torrents
      * @apiGroup Transmission
      * @apiDescription Retrieve an Array of Objects representing torrents
-     * @apiSuccess {Object[]} torrents An array containing torrents
-     * @apiSuccess {number} torrents.id unique identifier for the torrent
+     * @apiSuccess {Array} torrents An array containing torrents
+     * @apiSuccess {Number} torrents.activityDate Last time of upload or download activity
+     * @apiSuccess {Number} torrents.addedDate The date when this torrent was first added
+     * @apiSuccess {Number} torrents.doneDate The date when the torrent finished downloading
+     * @apiSuccess {Number} torrents.eta Estimated time remaining (seconds)
+     * @apiSuccess {Number} torrents.id unique identifier for the torrent
+     * @apiSuccess {String} torrents.magnetLink The magnet link for the torrent
+     * @apiSuccess {String} torrents.name The name of the torrent
+     * @apiSuccess {Number} torrents.percentDone Download Progress 0.0 to 1.0
+     * @apiSuccess {Number} torrents.rateDownload Download rate (b/s)
+     * @apiSuccess {Number} torrents.rateUpload Upload rate (b/s)
+     * @apiSuccess {Number} torrents.uploadRatio Seed ratio
      *
      */
+    router.get('/torrents', tm.getTorrentsRequest, tm.query, tm.torrentsResponse);
+
 
     /**
-     * @api {post} /torrents Add a Torrent
+     * @api {post} /transmission/torrents Add a Torrent
      * @apiGroup Transmission
      * @apiParam (required) {String} filename Magnet Link for torrent file.
      * @apiParamExample {json} Request Body
@@ -185,6 +203,81 @@ module.exports = function (config) {
      *  {
      *      "filename": "magnet:?xt=urn:magnet.link.goes.here"
      *  }
+     *
+     */
+
+    /**
+     * @api {get} /transmission/torrents/:id Get a Torrent
+     * @apiGroup Transmission
+     * @apiParam (required) {number} id Torrent id
+     * @apiSuccess {Number} activityDate Last time of upload or download activity
+     * @apiSuccess {Number} addedDate The date when this torrent was first added
+     * @apiSuccess {Number} doneDate The date when the torrent finished downloading
+     * @apiSuccess {Number} eta Estimated time remaining (seconds)
+     * @apiSuccess {Number} id unique identifier for the torrent
+     * @apiSuccess {String} magnetLink The magnet link for the torrent
+     * @apiSuccess {String} name The name of the torrent
+     * @apiSuccess {Number} percentDone Download Progress 0.0 to 1.0
+     * @apiSuccess {Number} rateDownload Download rate (b/s)
+     * @apiSuccess {Number} rateUpload Upload rate (b/s)
+     * @apiSuccess {Number} uploadRatio Seed ratio
+     * @apiSuccessExample {json} Success
+     *  HTTP/1.1 200 OK
+     *  {
+     *      "activityDate": 1493824345,
+     *      "addedDate": 1493680963,
+     *      "doneDate": 1493823995,
+     *      "eta": -1,
+     *      "id": 1,
+     *      "magnetLink": "magnet:?xt=urn:path.to.magnet.link",
+     *      "name": "Awesome Torrent File",
+     *      "percentDone": 1,
+     *      "rateDownload": 0,
+     *      "rateUpload": 0,
+     *      "uploadRatio": 0.0002
+     *  }
+     */
+    router.get('/torrents/:id', tm.getTorrentsRequest, tm.query, tm.torrentResponse);
+
+    /**
+     * @api {put} /transmission/torrents/:id Update a Torrent
+     * @apiGroup Transmission
+     * @apiParam (required) {number} id Torrent id
+     *
+     */
+
+    /**
+     * @api {delete} /transmission/torrents/:id Remove a Torrent
+     * @apiGroup Transmission
+     * @apiParam (required) {number} id Torrent id
+     *
+     */
+
+    /**
+     * @api {put} /transmission/torrents/:id/start Start a Torrent
+     * @apiGroup Transmission
+     * @apiParam (required) {number} id Torrent id
+     *
+     */
+
+    /**
+     * @api {put} /transmission/torrents/:id/stop Stop a Torrent
+     * @apiGroup Transmission
+     * @apiParam (required) {number} id Torrent id
+     *
+     */
+
+    /**
+     * @api {put} /transmission/torrents/:id/verify Verify a Torrent
+     * @apiGroup Transmission
+     * @apiParam (required) {number} id Torrent id
+     *
+     */
+
+    /**
+     * @api {put} /transmission/torrents/:id/reannounce Reannounce a Torrent
+     * @apiGroup Transmission
+     * @apiParam (required) {number} id Torrent id
      *
      */
 
