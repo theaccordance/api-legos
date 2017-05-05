@@ -109,7 +109,7 @@ module.exports = function (config) {
         req.transmission = {
             method: ENUMS.torrents.GET,
             arguments: {
-                fields: ['activityDate', 'addedDate', 'doneDate', 'eta', 'id', 'magnetLink', 'name', 'percentDone', 'rateDownload', 'rateUpload', 'uploadRatio']
+                fields: ['activityDate', 'addedDate', 'doneDate', 'downloadLimit', 'eta', 'id', 'magnetLink', 'name', 'percentDone', 'rateDownload', 'rateUpload', 'uploadLimit', 'uploadRatio']
             }
         };
 
@@ -150,6 +150,51 @@ module.exports = function (config) {
         return res.json(res.transmission);
     }
 
+    function removeTorrentRequest(req, res, next) {
+        req.transmission = {
+            method: ENUMS.torrents.DELETE,
+            arguments: {
+                ids: [parseInt(req.params.id)]
+            }
+        };
+
+        return next();
+    }
+
+    function removeTorrentResponse(req, res) {
+        if (res.transmission.result === "success") {
+            return res.status(204).end();
+        }
+    }
+
+    function updateTorrentRequest(req, res, next) {
+
+        if (!req.body) {
+            return res.status(400).json({
+                "error": "No arguments provided in request body"
+            });
+        }
+
+        req.transmission = {
+            method: ENUMS.torrents.PUT,
+            arguments: {
+                ids: [parseInt(req.params.id)],
+                downloadLimit: req.body.downloadLimit
+            }
+        };
+        return next();
+    }
+
+    function verifyTorrentUpdate(req, res, next) {
+        if (res.transmission.result === "success") {
+            delete req.transmission;
+            delete res.transmission;
+            return next();
+        }
+        console.log('exception');
+        return res.json(res.transmission);
+    }
+
     function torrentsResponse(req, res) {
         return res.json(res.transmission);
     }
@@ -174,6 +219,10 @@ module.exports = function (config) {
         getTorrentsRequest: getTorrentsRequest,
         addTorrentRequest: addTorrentRequest,
         verifyAddTorrent: verifyAddTorrent,
+        removeTorrentRequest: removeTorrentRequest,
+        removeTorrentResponse: removeTorrentResponse,
+        updateTorrentRequest: updateTorrentRequest,
+        verifyTorrentUpdate: verifyTorrentUpdate,
         torrentsResponse: torrentsResponse,
         torrentResponse: torrentResponse,
         query: queryServer
