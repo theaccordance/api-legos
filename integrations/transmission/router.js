@@ -164,7 +164,7 @@ module.exports = function (config) {
      *    }
      *
      */
-    router.get('/', tm.getSessionRequest, tm.query, tm.getSessionResponse);
+    router.get('/', tm.getSessionRequest, tm.query, tm.sessionResponse);
 
     /**
      * @api {put} /transmission Update Application
@@ -201,7 +201,7 @@ module.exports = function (config) {
      *
      * @apiUse sessionSuccess
      */
-    router.put('/', tm.setSessionRequest, tm.query, tm.setSessionResponse, tm.getSessionRequest, tm.query, tm.getSessionResponse);
+    router.put('/', tm.setSessionRequest, tm.query, tm.setSessionVerify, tm.getSessionRequest, tm.query, tm.sessionResponse);
 
     /**
      * @api {get} /transmission/torrents List All Torrents
@@ -236,7 +236,7 @@ module.exports = function (config) {
      *      }]
      *  }
      */
-    router.get('/torrents', tm.getTorrentsRequest, tm.query, tm.torrentsResponse);
+    router.get('/torrents', tm.getTorrentRequest, tm.query, tm.torrentsResponse);
 
 
     /**
@@ -251,7 +251,7 @@ module.exports = function (config) {
      *  }
      * @apiUse torrentSuccess
      */
-    router.post('/torrents', tm.addTorrentRequest, tm.query, tm.verifyAddTorrent, tm.getTorrentsRequest, tm.query, tm.torrentResponse);
+    router.post('/torrents', tm.addTorrentRequest, tm.query, tm.addTorrentVerify, tm.getTorrentRequest, tm.query, tm.torrentResponse);
 
     /**
      * @api {get} /transmission/torrents/:id Get a Torrent
@@ -267,7 +267,7 @@ module.exports = function (config) {
      *      "id": "5"
      *    }
      */
-    router.get('/torrents/:id', tm.getTorrentsRequest, tm.query, tm.torrentResponse);
+    router.get('/torrents/:id', tm.getTorrentRequest, tm.query, tm.torrentResponse);
 
     /**
      * @api {put} /transmission/torrents/:id Update a Torrent
@@ -279,7 +279,7 @@ module.exports = function (config) {
      * @apiParam (Optional) {Number} uploadLimit Maximum upload speed (KBps)
      * @apiUse torrentSuccess
      */
-    router.put('/torrents/:id', tm.updateTorrentRequest, tm.query, tm.verifyTorrentUpdate, tm.getTorrentsRequest, tm.query, tm.torrentResponse);
+    router.put('/torrents/:id', tm.updateTorrentRequest, tm.query, tm.verifyTorrentUpdate, tm.getTorrentRequest, tm.query, tm.torrentResponse);
 
     /**
      * @api {delete} /transmission/torrents/:id Remove a Torrent

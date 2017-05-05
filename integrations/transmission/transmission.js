@@ -53,11 +53,11 @@ module.exports = function (config) {
         return next();
     }
 
-    function getSessionResponse(req, res) {
+    function sessionResponse(req, res) {
         return res.json(res.transmission.arguments);
     }
 
-    function setSessionResponse(req, res, next) {
+    function setSessionVerify(req, res, next) {
         if (res.transmission.result === "success") {
             delete req.transmission;
             delete res.transmission;
@@ -105,7 +105,7 @@ module.exports = function (config) {
         return next();
     }
 
-    function getTorrentsRequest(req, res, next) {
+    function getTorrentRequest(req, res, next) {
         req.transmission = {
             method: ENUMS.torrents.GET,
             arguments: {
@@ -133,7 +133,7 @@ module.exports = function (config) {
         return next();
     }
 
-    function verifyAddTorrent(req, res, next) {
+    function addTorrentVerify(req, res, next) {
         // torrent already exists
         if (res.transmission.arguments["torrent-duplicate"]) {
             return res.status(400).json({
@@ -213,12 +213,12 @@ module.exports = function (config) {
 
     return {
         getSessionRequest: getSessionRequest,
-        getSessionResponse: getSessionResponse,
+        sessionResponse: sessionResponse,
         setSessionRequest: setSessionRequest,
-        setSessionResponse: setSessionResponse,
-        getTorrentsRequest: getTorrentsRequest,
+        setSessionVerify: setSessionVerify,
+        getTorrentRequest: getTorrentRequest,
         addTorrentRequest: addTorrentRequest,
-        verifyAddTorrent: verifyAddTorrent,
+        addTorrentVerify: addTorrentVerify,
         removeTorrentRequest: removeTorrentRequest,
         removeTorrentResponse: removeTorrentResponse,
         updateTorrentRequest: updateTorrentRequest,
