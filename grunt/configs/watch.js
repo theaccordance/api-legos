@@ -2,7 +2,7 @@ module.exports = function () {
     "use strict";
     return {
         api: {
-            files: ['integrations/**/*.js'],
+            files: ['api/**/*.js'],
             tasks: ['apidoc']
         }
     };
