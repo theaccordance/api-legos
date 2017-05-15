@@ -9,6 +9,9 @@ npm install legos-api
 ## Integrations
 - Transmission
 
+## Documentation
+
+API Documentation is available at http://joemainwaring.com/api-legos/
 
 ## Example
 ```javascript
